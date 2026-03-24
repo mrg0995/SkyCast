@@ -4,17 +4,17 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 
-# --- 1. CONFIGURACIÓN DE PÁGINA ---
+# --- 1. PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="SkyCast: Tu App del Clima", 
+    page_title="SkyCast", 
     page_icon="🌤️", 
     layout="centered"
 )
 
-# API Key de OpenWeatherMap
-API_KEY = "TU_API_KEY_AQUI"
+# OpenWeatherMap API Key
+API_KEY = "YOUR_OPENWEATHERMAP_API_KEY"
 
-# Estilos CSS personalizados para el pie de página
+# Custom CSS for the footer
 st.markdown("""
     <style>
     .footer {
@@ -30,68 +30,69 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. INTERFAZ DE USUARIO ---
-st.title("🌤️ SkyCast: El tiempo en tiempo real")
-st.write("Consulta las condiciones climáticas de cualquier ciudad del mundo.")
+# --- 2. USER INTERFACE ---
+st.title("🌤️ SkyCast: Real-Time Weather")
+st.write("Check weather conditions for any city in the world.")
 
-ciudad = st.text_input(
-    "Escribe el nombre de una ciudad:", 
-    placeholder="Ej: Madrid, ES / Jaén, ES / Tokyo, JP"
+city = st.text_input(
+    "Enter a city name:", 
+    placeholder="e.g., London, UK / New York, US / Tokyo, JP"
 )
 
-if ciudad:
-    # Construcción de la URL (Métrica y Español)
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={ciudad}&appid={API_KEY}&units=metric&lang=es"
+if city:
+    # URL Construction (Metric units and English language)
+    # Changed 'lang=es' to 'lang=en'
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric&lang=en"
     
     try:
-        respuesta = requests.get(url)
-        datos = respuesta.json()
+        response = requests.get(url)
+        data = response.json()
 
-        if datos.get("cod") == 200:
-            # Extracción de datos
-            temp = datos["main"]["temp"]
-            humedad = datos["main"]["humidity"]
-            descripcion = datos["weather"][0]["description"]
-            icono = datos["weather"][0]["icon"]
-            viento = datos["wind"]["speed"]
-            lat = datos["coord"]["lat"]
-            lon = datos["coord"]["lon"]
+        if data.get("cod") == 200:
+            # Data extraction
+            temp = data["main"]["temp"]
+            humidity = data["main"]["humidity"]
+            description = data["weather"][0]["description"]
+            icon = data["weather"][0]["icon"]
+            wind = data["wind"]["speed"]
+            lat = data["coord"]["lat"]
+            lon = data["coord"]["lon"]
 
             st.divider()
             
-            # Bloque de métricas
+            # Metrics block
             col1, col2 = st.columns(2)
             with col1:
-                st.metric("Temperatura", f"{temp} °C")
-                st.write(f"**Estado:** {descripcion.capitalize()}")
-                st.image(f"http://openweathermap.org/img/wn/{icono}@2x.png")
+                st.metric("Temperature", f"{temp} °C")
+                st.write(f"**Conditions:** {description.capitalize()}")
+                st.image(f"http://openweathermap.org/img/wn/{icon}@2x.png")
 
             with col2:
-                st.metric("Humedad", f"{humedad} %")
-                st.metric("Viento", f"{viento} m/s")
+                st.metric("Humidity", f"{humidity} %")
+                st.metric("Wind Speed", f"{wind} m/s")
 
-            # Bloque de Mapa con Folium
-            st.subheader(f"📍 Ubicación detectada")
+            # Map block with Folium
+            st.subheader(f"📍 Detected Location")
             m = folium.Map(location=[lat, lon], zoom_start=12)
             folium.Marker(
                 [lat, lon], 
-                popup=f"{ciudad.capitalize()}", 
+                popup=f"{city.capitalize()}", 
                 icon=folium.Icon(color="red", icon="info-sign")
             ).add_to(m)
             
             st_folium(m, width=700, height=400)
 
-            # Consejos dinámicos
+            # Dynamic tips
             if temp > 25:
-                st.info("☀️ Hace calor. ¡Mantente hidratado!")
+                st.info("☀️ It's hot outside. Stay hydrated!")
             elif temp < 10:
-                st.info("❄️ Hace frío. No olvides tu abrigo.")
+                st.info("❄️ It's cold. Don't forget your coat.")
             
         else:
-            st.error("⚠️ No se pudo encontrar la ciudad. Intenta añadir el código del país (ej: 'Jaén, ES').")
+            st.error("⚠️ City not found. Please try adding the country code (e.g., 'London, GB').")
             
     except Exception as e:
-        st.error("❌ Error de conexión con el servicio meteorológico.")
+        st.error("❌ Connection error with the weather service.")
 
-# Pie de página
-st.markdown('<div class="footer">Datos proporcionados por OpenWeatherMap API • Desarrollado con Streamlit</div>', unsafe_allow_html=True)
+# Footer
+st.markdown('<div class="footer">Data provided by OpenWeatherMap API • Built with Streamlit</div>', unsafe_allow_html=True)
