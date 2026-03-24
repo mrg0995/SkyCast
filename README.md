@@ -29,3 +29,8 @@
 3. Run the application:
    ```bash
    streamlit run sky_cast.py
+
+✒️ Author
+Mario Ramírez - mrg0995
+
+"The weather is more than just data; it's the context of our daily lives." 🌤️
